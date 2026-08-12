@@ -27,22 +27,56 @@ export default function FlightTab({ setResponse, setStatus }) {
     total_seats: "",
   });
 
+  // -----------------------------
+  // SUCCESS RESPONSE
+  // -----------------------------
   const showSuccess = (res) => {
     setStatus(res.status);
-    setResponse(JSON.stringify(res.data, null, 2));
-  };
 
-  const showError = (err) => {
-    setStatus(err.response?.status || "Error");
+    const method = res.config?.method?.toUpperCase() || "N/A";
+    const url = res.config?.baseURL
+      ? `${res.config.baseURL}${res.config.url}`
+      : res.config?.url || "N/A";
+
     setResponse(
-      JSON.stringify(
-        err.response?.data || { message: err.message },
-        null,
-        2
-      )
+      `✅ API Successfully Ran\n\n` +
+      `Data:\n` +
+      `${JSON.stringify(res.data, null, 2)}\n\n` +
+      `Request:\n` +
+      `${method} ${url}\n` +
+      `Status: ${res.status}`
     );
   };
 
+  // -----------------------------
+  // ERROR RESPONSE
+  // -----------------------------
+  const showError = (err) => {
+    const errorData =
+      err.response?.data || {
+        message: err.message,
+      };
+
+    const method = err.config?.method?.toUpperCase() || "N/A";
+    const url = err.config?.baseURL
+      ? `${err.config.baseURL}${err.config.url}`
+      : err.config?.url || "N/A";
+
+    setStatus(err.response?.status || "Error");
+
+    setResponse(
+      `❌ API Failed\n\n` +
+      `Error:\n` +
+      `${JSON.stringify(errorData, null, 2)}\n\n` +
+      `Request:\n` +
+      `${method} ${url}\n` +
+      `Status: ${err.response?.status || "Error"}`
+    );
+  };
+
+  // -----------------------------
+  // GET ALL FLIGHTS
+  // -----------------------------
   const getFlights = async () => {
     try {
       const res = await API.get("/flights");
@@ -52,6 +86,9 @@ export default function FlightTab({ setResponse, setStatus }) {
     }
   };
 
+  // -----------------------------
+  // GET FLIGHT BY ID
+  // -----------------------------
   const getFlight = async () => {
     try {
       const res = await API.get(`/flights/${flightId}`);
@@ -61,6 +98,9 @@ export default function FlightTab({ setResponse, setStatus }) {
     }
   };
 
+  // -----------------------------
+  // GET SEAT AVAILABILITY
+  // -----------------------------
   const getSeats = async () => {
     try {
       const res = await API.get(`/flights/${seatFlightId}/seats`);
@@ -70,6 +110,9 @@ export default function FlightTab({ setResponse, setStatus }) {
     }
   };
 
+  // -----------------------------
+  // CREATE FLIGHT
+  // -----------------------------
   const createFlight = async () => {
     try {
       const res = await API.post("/flights", {
@@ -86,44 +129,38 @@ export default function FlightTab({ setResponse, setStatus }) {
     }
   };
 
+  // -----------------------------
+  // PATCH FLIGHT
+  // -----------------------------
   const patchFlight = async () => {
-  try {
-    const data = {};
-
-    if (updateFlight.flight_number)
-      data.flight_number = updateFlight.flight_number;
-
-    if (updateFlight.airline_name)
-      data.airline_name = updateFlight.airline_name;
-
-    if (updateFlight.departure_time)
-      data.departure_time = updateFlight.departure_time;
-
-    if (updateFlight.arrival_time)
-      data.arrival_time = updateFlight.arrival_time;
-
-    if (updateFlight.status)
-      data.status = updateFlight.status;
-
-    if (updateFlight.gate)
-      data.gate = updateFlight.gate;
-
-    if (updateFlight.total_seats)
-      data.total_seats = Number(updateFlight.total_seats);
-
-    const res = await API.patch(`/flights/${flightId}`, data);
-
-    showSuccess(res);
-
-  } catch (err) {
-    showError(err);
-  }
-};
-
-  const deleteFlight = async () => {
     try {
+      const data = {};
 
-      const res = await API.delete(`/flights/${flightId}`);
+      if (updateFlight.flight_number)
+        data.flight_number = updateFlight.flight_number;
+
+      if (updateFlight.airline_name)
+        data.airline_name = updateFlight.airline_name;
+
+      if (updateFlight.departure_time)
+        data.departure_time = updateFlight.departure_time;
+
+      if (updateFlight.arrival_time)
+        data.arrival_time = updateFlight.arrival_time;
+
+      if (updateFlight.status)
+        data.status = updateFlight.status;
+
+      if (updateFlight.gate)
+        data.gate = updateFlight.gate;
+
+      if (updateFlight.total_seats)
+        data.total_seats = Number(updateFlight.total_seats);
+
+      const res = await API.patch(
+        `/flights/${flightId}`,
+        data
+      );
 
       showSuccess(res);
 
@@ -132,255 +169,318 @@ export default function FlightTab({ setResponse, setStatus }) {
     }
   };
 
+  // -----------------------------
+  // DELETE FLIGHT
+  // -----------------------------
+  const deleteFlight = async () => {
+    try {
+      const res = await API.delete(`/flights/${flightId}`);
+      showSuccess(res);
+
+    } catch (err) {
+      showError(err);
+    }
+  };
+
   return (
+    <div>
 
-<div>
+      <h2>Flight APIs</h2>
 
-<h2>Flight APIs</h2>
+      <hr />
 
-<hr/>
+      {/* GET ALL FLIGHTS */}
 
-<div className="api-card">
+      <div className="api-card">
 
-<h3>1. Get All Flights</h3>
+        <h3>1. Get All Flights</h3>
 
-<button className="get-btn"
-onClick={getFlights}>
-Get Flights
-</button>
+        <button
+          className="get-btn"
+          onClick={getFlights}
+        >
+          Get Flights
+        </button>
 
-</div>
+      </div>
 
-<div className="api-card">
 
-<h3>2. Get Flight By ID</h3>
+      {/* GET FLIGHT BY ID */}
 
-<input
-placeholder="Flight ID"
-value={flightId}
-onChange={(e)=>setFlightId(e.target.value)}
-/>
+      <div className="api-card">
 
-<button
-className="get-btn"
-onClick={getFlight}>
-Get Flight
-</button>
+        <h3>2. Get Flight By ID</h3>
 
-</div>
+        <input
+          placeholder="Flight ID"
+          value={flightId}
+          onChange={(e) =>
+            setFlightId(e.target.value)
+          }
+        />
 
-<div className="api-card">
+        <button
+          className="get-btn"
+          onClick={getFlight}
+        >
+          Get Flight
+        </button>
 
-<h3>3. Get Seat Availability</h3>
+      </div>
 
-<input
-placeholder="Flight ID"
-value={seatFlightId}
-onChange={(e)=>setSeatFlightId(e.target.value)}
-/>
 
-<button
-className="get-btn"
-onClick={getSeats}>
-Get Seats
-</button>
+      {/* GET SEAT AVAILABILITY */}
 
-</div>
+      <div className="api-card">
 
-<div className="api-card">
+        <h3>3. Get Seat Availability</h3>
 
-  <h3>4. Create Flight</h3>
+        <input
+          placeholder="Flight ID"
+          value={seatFlightId}
+          onChange={(e) =>
+            setSeatFlightId(e.target.value)
+          }
+        />
 
-  <input
-    placeholder="Flight Number"
-    value={newFlight.flight_number}
-    onChange={(e) =>
-      setNewFlight({ ...newFlight, flight_number: e.target.value })
-    }
-  />
+        <button
+          className="get-btn"
+          onClick={getSeats}
+        >
+          Get Seats
+        </button>
 
-  <input
-    placeholder="Airline Name"
-    value={newFlight.airline_name}
-    onChange={(e) =>
-      setNewFlight({ ...newFlight, airline_name: e.target.value })
-    }
-  />
+      </div>
 
-  <input
-    placeholder="Departure Time (YYYY-MM-DD HH:MM:SS)"
-    value={newFlight.departure_time}
-    onChange={(e) =>
-      setNewFlight({ ...newFlight, departure_time: e.target.value })
-    }
-  />
 
-  <input
-    placeholder="Arrival Time (YYYY-MM-DD HH:MM:SS)"
-    value={newFlight.arrival_time}
-    onChange={(e) =>
-      setNewFlight({ ...newFlight, arrival_time: e.target.value })
-    }
-  />
+      {/* CREATE FLIGHT */}
 
-  <input
-    placeholder="Gate"
-    value={newFlight.gate}
-    onChange={(e) =>
-      setNewFlight({ ...newFlight, gate: e.target.value })
-    }
-  />
+      <div className="api-card">
 
-  <input
-    placeholder="Total Seats"
-    value={newFlight.total_seats}
-    onChange={(e) =>
-      setNewFlight({ ...newFlight, total_seats: e.target.value })
-    }
-  />
+        <h3>4. Create Flight</h3>
 
-  <input
-    placeholder="Origin Airport ID"
-    value={newFlight.origin_airport_id}
-    onChange={(e) =>
-      setNewFlight({ ...newFlight, origin_airport_id: e.target.value })
-    }
-  />
+        <input
+          placeholder="Flight Number"
+          value={newFlight.flight_number}
+          onChange={(e) =>
+            setNewFlight({
+              ...newFlight,
+              flight_number: e.target.value,
+            })
+          }
+        />
 
-  <input
-    placeholder="Destination Airport ID"
-    value={newFlight.dest_airport_id}
-    onChange={(e) =>
-      setNewFlight({ ...newFlight, dest_airport_id: e.target.value })
-    }
-  />
+        <input
+          placeholder="Airline Name"
+          value={newFlight.airline_name}
+          onChange={(e) =>
+            setNewFlight({
+              ...newFlight,
+              airline_name: e.target.value,
+            })
+          }
+        />
 
-  <button
-    className="post-btn"
-    onClick={createFlight}
-  >
-    Create Flight
-  </button>
+        <input
+          placeholder="Departure Time (YYYY-MM-DD HH:MM:SS)"
+          value={newFlight.departure_time}
+          onChange={(e) =>
+            setNewFlight({
+              ...newFlight,
+              departure_time: e.target.value,
+            })
+          }
+        />
 
-</div>
+        <input
+          placeholder="Arrival Time (YYYY-MM-DD HH:MM:SS)"
+          value={newFlight.arrival_time}
+          onChange={(e) =>
+            setNewFlight({
+              ...newFlight,
+              arrival_time: e.target.value,
+            })
+          }
+        />
 
-<div className="api-card">
+        <input
+          placeholder="Gate"
+          value={newFlight.gate}
+          onChange={(e) =>
+            setNewFlight({
+              ...newFlight,
+              gate: e.target.value,
+            })
+          }
+        />
 
-  <h3>5. Patch Flight</h3>
+        <input
+          placeholder="Total Seats"
+          value={newFlight.total_seats}
+          onChange={(e) =>
+            setNewFlight({
+              ...newFlight,
+              total_seats: e.target.value,
+            })
+          }
+        />
 
-  <input
-    placeholder="Flight ID"
-    value={flightId}
-    onChange={(e) => setFlightId(e.target.value)}
-  />
+        <input
+          placeholder="Origin Airport ID"
+          value={newFlight.origin_airport_id}
+          onChange={(e) =>
+            setNewFlight({
+              ...newFlight,
+              origin_airport_id: e.target.value,
+            })
+          }
+        />
 
-  <input
-    placeholder="Flight Number"
-    value={updateFlight.flight_number}
-    onChange={(e) =>
-      setUpdateFlight({
-        ...updateFlight,
-        flight_number: e.target.value,
-      })
-    }
-  />
+        <input
+          placeholder="Destination Airport ID"
+          value={newFlight.dest_airport_id}
+          onChange={(e) =>
+            setNewFlight({
+              ...newFlight,
+              dest_airport_id: e.target.value,
+            })
+          }
+        />
 
-  <input
-    placeholder="Airline Name"
-    value={updateFlight.airline_name}
-    onChange={(e) =>
-      setUpdateFlight({
-        ...updateFlight,
-        airline_name: e.target.value,
-      })
-    }
-  />
+        <button
+          className="post-btn"
+          onClick={createFlight}
+        >
+          Create Flight
+        </button>
 
-  <input
-    placeholder="Departure Time"
-    value={updateFlight.departure_time}
-    onChange={(e) =>
-      setUpdateFlight({
-        ...updateFlight,
-        departure_time: e.target.value,
-      })
-    }
-  />
+      </div>
 
-  <input
-    placeholder="Arrival Time"
-    value={updateFlight.arrival_time}
-    onChange={(e) =>
-      setUpdateFlight({
-        ...updateFlight,
-        arrival_time: e.target.value,
-      })
-    }
-  />
 
-  <input
-    placeholder="Status"
-    value={updateFlight.status}
-    onChange={(e) =>
-      setUpdateFlight({
-        ...updateFlight,
-        status: e.target.value,
-      })
-    }
-  />
+      {/* PATCH FLIGHT */}
 
-  <input
-    placeholder="Gate"
-    value={updateFlight.gate}
-    onChange={(e) =>
-      setUpdateFlight({
-        ...updateFlight,
-        gate: e.target.value,
-      })
-    }
-  />
+      <div className="api-card">
 
-  <input
-    placeholder="Total Seats"
-    value={updateFlight.total_seats}
-    onChange={(e) =>
-      setUpdateFlight({
-        ...updateFlight,
-        total_seats: e.target.value,
-      })
-    }
-  />
+        <h3>5. Patch Flight</h3>
 
-  <button
-    className="patch-btn"
-    onClick={patchFlight}
-  >
-    Patch Flight
-  </button>
+        <input
+          placeholder="Flight ID"
+          value={flightId}
+          onChange={(e) =>
+            setFlightId(e.target.value)
+          }
+        />
 
-</div>
+        <input
+          placeholder="Flight Number"
+          value={updateFlight.flight_number}
+          onChange={(e) =>
+            setUpdateFlight({
+              ...updateFlight,
+              flight_number: e.target.value,
+            })
+          }
+        />
 
-<div className="api-card">
+        <input
+          placeholder="Airline Name"
+          value={updateFlight.airline_name}
+          onChange={(e) =>
+            setUpdateFlight({
+              ...updateFlight,
+              airline_name: e.target.value,
+            })
+          }
+        />
 
-  <h3>6. Delete Flight</h3>
+        <input
+          placeholder="Departure Time"
+          value={updateFlight.departure_time}
+          onChange={(e) =>
+            setUpdateFlight({
+              ...updateFlight,
+              departure_time: e.target.value,
+            })
+          }
+        />
 
-  <input
-    placeholder="Flight ID"
-    value={flightId}
-    onChange={(e) => setFlightId(e.target.value)}
-  />
+        <input
+          placeholder="Arrival Time"
+          value={updateFlight.arrival_time}
+          onChange={(e) =>
+            setUpdateFlight({
+              ...updateFlight,
+              arrival_time: e.target.value,
+            })
+          }
+        />
 
-  <button
-    className="delete-btn"
-    onClick={deleteFlight}
-  >
-    Delete Flight
-  </button>
+        <input
+          placeholder="Status"
+          value={updateFlight.status}
+          onChange={(e) =>
+            setUpdateFlight({
+              ...updateFlight,
+              status: e.target.value,
+            })
+          }
+        />
 
-</div>
+        <input
+          placeholder="Gate"
+          value={updateFlight.gate}
+          onChange={(e) =>
+            setUpdateFlight({
+              ...updateFlight,
+              gate: e.target.value,
+            })
+          }
+        />
 
-</div>
+        <input
+          placeholder="Total Seats"
+          value={updateFlight.total_seats}
+          onChange={(e) =>
+            setUpdateFlight({
+              ...updateFlight,
+              total_seats: e.target.value,
+            })
+          }
+        />
 
+        <button
+          className="patch-btn"
+          onClick={patchFlight}
+        >
+          Patch Flight
+        </button>
+
+      </div>
+
+
+      {/* DELETE FLIGHT */}
+
+      <div className="api-card">
+
+        <h3>6. Delete Flight</h3>
+
+        <input
+          placeholder="Flight ID"
+          value={flightId}
+          onChange={(e) =>
+            setFlightId(e.target.value)
+          }
+        />
+
+        <button
+          className="delete-btn"
+          onClick={deleteFlight}
+        >
+          Delete Flight
+        </button>
+
+      </div>
+
+    </div>
   );
-
 }

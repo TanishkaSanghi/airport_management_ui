@@ -5,20 +5,50 @@ export default function PaymentTab({ setResponse, setStatus }) {
   const [paymentId, setPaymentId] = useState("");
   const [bookingId, setBookingId] = useState("");
 
+  // -----------------------------
+  // SUCCESS RESPONSE
+  // -----------------------------
   const showResponse = (res) => {
     setStatus(res.status);
-    setResponse(JSON.stringify(res.data, null, 2));
+
+    const method = res.config?.method?.toUpperCase() || "N/A";
+    const url = res.config?.baseURL
+      ? `${res.config.baseURL}${res.config.url}`
+      : res.config?.url || "N/A";
+
+    setResponse(
+      `✅ API Successfully Ran\n\n` +
+      `Data:\n` +
+      `${JSON.stringify(res.data, null, 2)}\n\n` +
+      `Request:\n` +
+      `${method} ${url}\n` +
+      `Status: ${res.status}`
+    );
   };
 
+  // -----------------------------
+  // ERROR RESPONSE
+  // -----------------------------
   const showError = (err) => {
+    const errorData =
+      err.response?.data || {
+        message: err.message,
+      };
+
+    const method = err.config?.method?.toUpperCase() || "N/A";
+    const url = err.config?.baseURL
+      ? `${err.config.baseURL}${err.config.url}`
+      : err.config?.url || "N/A";
+
     setStatus(err.response?.status || "Error");
 
     setResponse(
-      JSON.stringify(
-        err.response?.data || { message: err.message },
-        null,
-        2
-      )
+      `❌ API Failed\n\n` +
+      `Error:\n` +
+      `${JSON.stringify(errorData, null, 2)}\n\n` +
+      `Request:\n` +
+      `${method} ${url}\n` +
+      `Status: ${err.response?.status || "Error"}`
     );
   };
 
@@ -63,7 +93,9 @@ export default function PaymentTab({ setResponse, setStatus }) {
           type="number"
           placeholder="Payment ID"
           value={paymentId}
-          onChange={(e) => setPaymentId(e.target.value)}
+          onChange={(e) =>
+            setPaymentId(e.target.value)
+          }
         />
 
         <button onClick={getPayment}>
@@ -81,7 +113,9 @@ export default function PaymentTab({ setResponse, setStatus }) {
           type="number"
           placeholder="Booking ID"
           value={bookingId}
-          onChange={(e) => setBookingId(e.target.value)}
+          onChange={(e) =>
+            setBookingId(e.target.value)
+          }
         />
 
         <button onClick={getPaymentByBooking}>

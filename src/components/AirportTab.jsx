@@ -4,7 +4,6 @@ import API from "../api";
 export default function AirportTab({ setResponse, setStatus }) {
   const [airportId, setAirportId] = useState("");
 
-  // CREATE AIRPORT
   const [airport, setAirport] = useState({
     name: "",
     city: "",
@@ -12,7 +11,6 @@ export default function AirportTab({ setResponse, setStatus }) {
     code: "",
   });
 
-  // UPDATE AIRPORT
   const [updateAirport, setUpdateAirport] = useState({
     name: "",
     city: "",
@@ -20,26 +18,56 @@ export default function AirportTab({ setResponse, setStatus }) {
     code: "",
   });
 
+  // -----------------------------
+  // SUCCESS RESPONSE
+  // -----------------------------
   const showResponse = (res) => {
     setStatus(res.status);
-    setResponse(JSON.stringify(res.data, null, 2));
-  };
 
-  const showError = (err) => {
-    setStatus(err.response?.status || "Error");
+    const method = res.config?.method?.toUpperCase() || "N/A";
+    const url = res.config?.baseURL
+      ? `${res.config.baseURL}${res.config.url}`
+      : res.config?.url || "N/A";
 
     setResponse(
-      JSON.stringify(
-        err.response?.data || { message: err.message },
-        null,
-        2
-      )
+      `✅ API Successfully Ran\n\n` +
+      `Data:\n` +
+      `${JSON.stringify(res.data, null, 2)}\n\n` +
+      `Request:\n` +
+      `${method} ${url}\n` +
+      `Status: ${res.status}`
     );
   };
 
-  // =========================
+  // -----------------------------
+  // ERROR RESPONSE
+  // -----------------------------
+  const showError = (err) => {
+    const errorData =
+      err.response?.data || {
+        message: err.message,
+      };
+
+    const method = err.config?.method?.toUpperCase() || "N/A";
+    const url = err.config?.baseURL
+      ? `${err.config.baseURL}${err.config.url}`
+      : err.config?.url || "N/A";
+
+    setStatus(err.response?.status || "Error");
+
+    setResponse(
+      `❌ API Failed\n\n` +
+      `Error:\n` +
+      `${JSON.stringify(errorData, null, 2)}\n\n` +
+      `Request:\n` +
+      `${method} ${url}\n` +
+      `Status: ${err.response?.status || "Error"}`
+    );
+  };
+
+  // -----------------------------
   // GET ALL AIRPORTS
-  // =========================
+  // -----------------------------
   const getAllAirports = async () => {
     try {
       const res = await API.get("/airports");
@@ -49,9 +77,9 @@ export default function AirportTab({ setResponse, setStatus }) {
     }
   };
 
-  // =========================
+  // -----------------------------
   // GET AIRPORT BY ID
-  // =========================
+  // -----------------------------
   const getAirport = async () => {
     try {
       const res = await API.get(`/airports/${airportId}`);
@@ -61,9 +89,9 @@ export default function AirportTab({ setResponse, setStatus }) {
     }
   };
 
-  // =========================
+  // -----------------------------
   // CREATE AIRPORT
-  // =========================
+  // -----------------------------
   const createAirport = async () => {
     try {
       const res = await API.post("/airports", airport);
@@ -73,14 +101,13 @@ export default function AirportTab({ setResponse, setStatus }) {
     }
   };
 
-  // =========================
+  // -----------------------------
   // PATCH AIRPORT
-  // =========================
+  // -----------------------------
   const patchAirport = async () => {
     try {
       const data = {};
 
-      // Only send fields that were actually filled
       if (updateAirport.name.trim() !== "") {
         data.name = updateAirport.name;
       }

@@ -12,22 +12,56 @@ export default function PassengerTab({ setResponse, setStatus }) {
     passport_number: "",
   });
 
+  // -----------------------------
+  // SUCCESS RESPONSE
+  // -----------------------------
   const handleSuccess = (res) => {
     setStatus(res.status);
-    setResponse(JSON.stringify(res.data, null, 2));
-  };
 
-  const handleError = (err) => {
-    setStatus(err.response?.status || "Error");
+    const method = res.config?.method?.toUpperCase() || "N/A";
+    const url = res.config?.baseURL
+      ? `${res.config.baseURL}${res.config.url}`
+      : res.config?.url || "N/A";
+
     setResponse(
-      JSON.stringify(
-        err.response?.data || { message: err.message },
-        null,
-        2
-      )
+      `✅ API Successfully Ran\n\n` +
+      `Data:\n` +
+      `${JSON.stringify(res.data, null, 2)}\n\n` +
+      `Request:\n` +
+      `${method} ${url}\n` +
+      `Status: ${res.status}`
     );
   };
 
+  // -----------------------------
+  // ERROR RESPONSE
+  // -----------------------------
+  const handleError = (err) => {
+    const errorData =
+      err.response?.data || {
+        message: err.message,
+      };
+
+    const method = err.config?.method?.toUpperCase() || "N/A";
+    const url = err.config?.baseURL
+      ? `${err.config.baseURL}${err.config.url}`
+      : err.config?.url || "N/A";
+
+    setStatus(err.response?.status || "Error");
+
+    setResponse(
+      `❌ API Failed\n\n` +
+      `Error:\n` +
+      `${JSON.stringify(errorData, null, 2)}\n\n` +
+      `Request:\n` +
+      `${method} ${url}\n` +
+      `Status: ${err.response?.status || "Error"}`
+    );
+  };
+
+  // -----------------------------
+  // GET PASSENGER
+  // -----------------------------
   const getPassenger = async () => {
     try {
       const res = await API.get(`/passengers/${passengerId}`);
@@ -37,6 +71,9 @@ export default function PassengerTab({ setResponse, setStatus }) {
     }
   };
 
+  // -----------------------------
+  // CREATE PASSENGER
+  // -----------------------------
   const createPassenger = async () => {
     try {
       const res = await API.post("/passengers", passenger);
@@ -54,6 +91,7 @@ export default function PassengerTab({ setResponse, setStatus }) {
 
       <br />
 
+      {/* GET PASSENGER */}
       <div className="api-card">
         <h3>Get Passenger By ID</h3>
 
@@ -71,6 +109,7 @@ export default function PassengerTab({ setResponse, setStatus }) {
 
       <br />
 
+      {/* CREATE PASSENGER */}
       <div className="api-card">
         <h3>Create Passenger</h3>
 
